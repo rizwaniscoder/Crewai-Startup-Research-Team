@@ -3,3 +3,8 @@ langchain_anthropic
 langchain_groq
 duckduckgo-search
 reportlab
+pysqlite3-binary
+chromadb
+streamlit
+langchain
+unstructured
