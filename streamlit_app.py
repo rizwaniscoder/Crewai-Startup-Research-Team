@@ -11,6 +11,7 @@ from crewai_tools import SerperDevTool
 
 from langchain_community.tools import DuckDuckGoSearchRun
 from crewai_tools import SeleniumScrapingTool
+from crewai_tools import ScrapeWebsiteTool
 
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
@@ -135,14 +136,14 @@ class CrewAIApp:
             description='###Instruction###\nYour task is to search the web for a diverse range of investors worldwide who are interested in language-learning apps, mobile applications, and AI technology. Our startup is launching an AI-driven conversation module in the language-learning space, based in the USA, and is in the pre-seed stage without prior investments. Focus on identifying both high-profile and emerging investors who are looking for new opportunities.',
             expected_output='###Output###\nCompile a comprehensive report listing investors with varying levels of fame and investment sizes:\n•\tInvestor name\n•\tInvestment focus\n•\tLocation\n•\tNotable investments\n•\tContact details (if available)\n•\tIndication of their typical investment stage and size',
             agent=market_research_agent,
-            tools=[SerperDevTool(), DuckDuckGoSearchRun()],
+            tools=[SerperDevTool(), SeleniumScrapingTool(), ScrapeWebsiteTool()],
         )
 
         specific_platform_task = Task(
             description='###Instruction###\nExplore LinkedIn, startup incubators, angel networks, and other investment-related platforms to identify potential investors. Target both well-known and lesser-known investors interested in AI technology and language learning apps. Ensure to include details from investors who have a history of funding early-stage startups, as well as those looking to diversify into new areas like AI-driven applications.',
             expected_output='###Output###\nProvide detailed profiles of each investor, including:\n•\tName\n•\tInvestment focus\n•\tProfessional background\n•\tAffiliated organizations\n•\tContact details (if available)\n•\tPrevious investment stages and sizes',
             agent=platform_research_agent,  
-            tools=[SerperDevTool(), DuckDuckGoSearchRun()],
+            tools=[SerperDevTool(), SeleniumScrapingTool(), ScrapeWebsiteTool()],
         )
 
         # scrape_investors_task = Task(
