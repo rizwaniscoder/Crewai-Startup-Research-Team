@@ -1,4 +1,3 @@
-# Import necessary libraries
 import streamlit as st
 import sys
 import re
@@ -15,6 +14,7 @@ from crewai_tools import SeleniumScrapingTool
 
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+
 
 def generate_pdf_report(output: dict):
     """
@@ -60,7 +60,6 @@ class StreamToExpander:
 
         if "Entering new CrewAgentExecutor chain" in cleaned_data:
             self.color_index = (self.color_index + 1) % len(self.colors)
-
             cleaned_data = cleaned_data.replace("Entering new CrewAgentExecutor chain",
                                                 f":{self.colors[self.color_index]}[Entering new CrewAgentExecutor chain]")
 
@@ -109,72 +108,70 @@ class CrewAIApp:
     def execute_startup_research(self, llm):
         
         market_research_agent = Agent(
-            role='Market Research Analyst',
-            goal='Identify potential investors for AI language learning startups',
-            backstory='As a market research analyst, your primary responsibility is to conduct comprehensive research to identify potential investors interested specifically in AI language learning startups. Your expertise lies in gathering detailed information about investors who have previously invested in similar startups, as well as those who show interest in investing in the AI education sector, with a focus on language learning applications.',
+            role='Web Research Agent',
+            goal='Search for a diverse range of investors worldwide who are interested in language-learning apps, mobile applications, and AI technology.',
+            backstory='As a Web Research Agent, your primary responsibility is to search the web for investors interested in language-learning apps, mobile applications, and AI technology. The startup is launching an AI-driven conversation module in the language-learning space, based in the USA, and is in the pre-seed stage without prior investments. Focus on identifying both high-profile and emerging investors who are looking for new opportunities.',
             llm=llm,
             verbose=True
         )
 
-        business_development_agent = Agent(
-            role='Business Development Consultant',
-            goal='Provide best approaches to establish connections with potential investors in AI language learning startups',
-            backstory='As a business development consultant, your primary responsibility is to facilitate investments in AI language learning startups by establishing connections with potential investors. Your expertise lies in identifying the most effective approaches to reach out to investors specifically interested in AI language learning startups, craft compelling pitches tailored to this sector, and foster meaningful relationships to secure funding.',
+        platform_research_agent = Agent(
+            role='Platform Research Agent',
+            goal='Identify potential investors from various platforms like LinkedIn, startup incubators, and angel networks.',
+            backstory='As a Platform Research Agent, your task is to explore various platforms to identify potential investors interested in AI technology and language learning apps. This includes both well-known and lesser-known investors with a history of funding early-stage startups or looking to diversify into new areas like AI-driven applications.',
             llm=llm,
             verbose=True    
         )
 
         research_analyst_agent = Agent(
-            role='Research Analyst',
-            goal='Analyze results and provide a comprehensive report on AI language learning startups',
-            backstory='As a research analyst, your primary responsibility is to analyze all collected data related to AI language learning startups, identify potential investors, analyze trends in the AI education space specifically focusing on language learning applications, and determine key areas to focus on when applying for fundraising for such startups. Your expertise lies in conducting thorough data analysis and providing actionable insights to guide the fundraising strategy for AI language learning startups.',
+            role='Analysis & Reporting Agent',
+            goal='Organize the data collected into a comprehensive Excel sheet for easy access and prospecting.',
+            backstory='As an Analysis & Reporting Agent, your primary responsibility is to organize the collected data into a comprehensive Excel sheet that facilitates easy access to both high-profile and lesser-known investor information. This will help in prioritizing potential outreach efforts.',
             llm=llm,
             verbose=True
         )
 
         search_investors_task = Task(
-            description='Search for potential investors specifically interested in AI language learning startups. Find all the investors around the world who are interested in, have invested in, or are willing to invest in similar startups, with a focus on language learning applications.',
-            expected_output='List of potential investors specifically interested in AI language learning startups and their details',
+            description='###Instruction###\nYour task is to search the web for a diverse range of investors worldwide who are interested in language-learning apps, mobile applications, and AI technology. Our startup is launching an AI-driven conversation module in the language-learning space, based in the USA, and is in the pre-seed stage without prior investments. Focus on identifying both high-profile and emerging investors who are looking for new opportunities.',
+            expected_output='###Output###\nCompile a comprehensive report listing investors with varying levels of fame and investment sizes:\n•\tInvestor name\n•\tInvestment focus\n•\tLocation\n•\tNotable investments\n•\tContact details (if available)\n•\tIndication of their typical investment stage and size',
             agent=market_research_agent,
             tools=[SerperDevTool(), SeleniumScrapingTool()],
-            async_execution=True,
         )
 
         specific_platform_task = Task(
-            description='Search for investors interested in AI language learning startups on specific platforms (e.g., LinkedIn, startup incubators, Angel investors in New York)',
-            expected_output='Data scraped from specific platforms related to AI language learning startups',
-            agent=market_research_agent,  
+            description='###Instruction###\nExplore LinkedIn, startup incubators, angel networks, and other investment-related platforms to identify potential investors. Target both well-known and lesser-known investors interested in AI technology and language learning apps. Ensure to include details from investors who have a history of funding early-stage startups, as well as those looking to diversify into new areas like AI-driven applications.',
+            expected_output='###Output###\nProvide detailed profiles of each investor, including:\n•\tName\n•\tInvestment focus\n•\tProfessional background\n•\tAffiliated organizations\n•\tContact details (if available)\n•\tPrevious investment stages and sizes',
+            agent=platform_research_agent,  
             tools=[SerperDevTool(), SeleniumScrapingTool()],
-            async_execution=True,
         )
 
-        scrape_investors_task = Task(
-            description='Scrape investor information specifically for AI language learning startups',
-            expected_output='Scraped data on potential investors interested in AI language learning startups',
-            agent=market_research_agent,
-            tools=[SeleniumScrapingTool()],
-            context=[search_investors_task, specific_platform_task],
-        )
+        # scrape_investors_task = Task(
+        #     description='Scrape investor information specifically for AI language learning startups',
+        #     expected_output='Scraped data on potential investors interested in AI language learning startups',
+        #     agent=market_research_agent,
+        #     tools=[SeleniumScrapingTool()],
+        #     context=[search_investors_task, specific_platform_task],
+        # )
 
-        connect_with_investors_task = Task(
-            description='Provide best approaches to reach investors interested in AI language learning startups and assist in fundraising',
-            expected_output='Guidance on effective outreach strategies, compelling pitches, and fundraising techniques specifically tailored to AI language learning startups',
-            agent=business_development_agent,
-            tools=[DuckDuckGoSearchRun()]  
-        )
+        # connect_with_investors_task = Task(
+        #     description='Provide best approaches to reach investors interested in AI language learning startups and assist in fundraising',
+        #     expected_output='Guidance on effective outreach strategies, compelling pitches, and fundraising techniques specifically tailored to AI language learning startups',
+        #     agent=platform_research_agent,
+        #     tools=[DuckDuckGoSearchRun()]  
+        # )
 
         analyze_results_task = Task(
-            description='Analyze results and provide a comprehensive report on AI language learning startups',
-            expected_output='Comprehensive report on potential investors interested in AI language learning startups, trends in the AI education space focusing on language learning applications, and key fundraising areas specifically tailored to such startups',
+            description='###Instruction###\nOrganize the data collected into a comprehensive Excel sheet, suitable for prospecting a broad spectrum of investors, including emerging ones. The sheet should facilitate easy access to both high-profile and lesser-known investor information.',
+            expected_output='###Output###\nCreate an Excel database with columns for:\n•\tInvestor name\n•\tInvestment focus\n•\tLocation\n•\tNotable investments\n•\tContact details\n•\tInvestment stage and size\n•\tAdditional notes on their investment trends and interests',
             agent=research_analyst_agent, 
-            context=[search_investors_task, specific_platform_task, scrape_investors_task, connect_with_investors_task],
+            context=[search_investors_task, specific_platform_task],
             callback=lambda output: generate_pdf_report(output.raw_output) 
         )
 
         # Run the Crew
         startup_research_crew = Crew(
-            agents=[market_research_agent, business_development_agent, research_analyst_agent],
-            tasks=[search_investors_task, specific_platform_task, scrape_investors_task, connect_with_investors_task, analyze_results_task],
+            agents=[market_research_agent, platform_research_agent, research_analyst_agent],
+            tasks=[search_investors_task, specific_platform_task, analyze_results_task],
             verbose=True
         )
 
